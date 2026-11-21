@@ -1,0 +1,248 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Smart Time Management</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #F5F1FA;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .signup-box {
+            background: #FFFFFF;
+            padding: 35px;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(48, 32, 95, 0.10);
+        }
+
+        h2 {
+            text-align: center;
+            color: #30205F;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #756A91;
+            margin-bottom: 25px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border: 1px solid #E0D2F4;
+            border-radius: 10px;
+            font-size: 15px;
+            background: #FCFAFF;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #7041BD;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 15px;
+            background: #7041BD;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #5E32A5;
+        }
+
+        .bottom-text {
+            text-align: center;
+            margin-top: 22px;
+            color: #756A91;
+        }
+
+        a {
+            color: #7041BD;
+            font-weight: 600;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .password-box {
+    position: relative;
+}
+
+.password-box input {
+    padding-right: 75px;
+}
+
+.password-box {
+    position: relative;
+    width: 100%;
+}
+
+.password-box input {
+    padding-right: 75px;
+}
+
+.password-box {
+    position: relative;
+    width: 100%;
+}
+
+.password-box input {
+    padding-right: 50px;
+}
+
+.password-box .eye-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 38px;
+    margin: 0;
+    padding: 8px;
+    background: transparent;
+    color: #000000;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-box .eye-btn:hover {
+    background: #F5F1FA;
+}
+    </style>
+</head>
+
+<body>
+
+    <div class="signup-box">
+
+        <h2>Create Account</h2>
+        <p class="subtitle">Start managing your time smartly.</p>
+
+        <form id="signupForm">
+
+            <input type="text" id="name"
+                   placeholder="Full Name" required>
+
+            <input type="email" id="email"
+                   placeholder="Email Address" required>
+
+            <div class="password-box">
+                <input type="password" id="password"
+                    placeholder="Create Password (minimum 8 characters)"
+                    minlength="8" required>
+
+                <button type="button" id="togglePassword" class="eye-btn" aria-label="Show password">
+                    <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg"
+                        width="22" height="22" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                </button>
+            </div>
+
+            <button type="submit">Sign Up</button>
+
+        </form>
+
+        <p id="message"></p>
+
+        <p class="bottom-text">
+            Already have an account?
+            <a href="login.html">Login</a>
+        </p>
+
+    </div>
+
+    <script>
+        document.getElementById("togglePassword").addEventListener("click", function() {
+    const password = document.getElementById("password");
+
+    if (password.type === "password") {
+        password.type = "text";
+        this.setAttribute("aria-label", "Hide password");
+    } else {
+        password.type = "password";
+        this.setAttribute("aria-label", "Show password");
+    }
+});
+        
+        document.getElementById("signupForm").addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+            const message = document.getElementById("message");
+
+            const userData = {
+                name: document.getElementById("name").value,
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value
+            };
+
+            try {
+                const response = await fetch("/api/auth/signup", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    message.style.color = "green";
+                    message.textContent = "Account created successfully!";
+
+                    document.getElementById("signupForm").reset();
+
+                    setTimeout(function() {
+                        window.location.href = "/login.html";
+                    }, 1500);
+
+                } else {
+                    message.style.color = "red";
+                    message.textContent =
+                        result.message || "Account creation failed.";
+                }
+
+            } catch (error) {
+                message.style.color = "red";
+                message.textContent = "Server connection failed.";
+            }
+
+        });
+    </script>
+
+</body>
+</html>

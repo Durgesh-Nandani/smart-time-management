@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Tasks - SmartTime</title>
+
+    
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        background: #f5f2fa;
+        color: #281b3d;
+    }
+
+    .container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .sidebar {
+        width: 230px;
+        flex-shrink: 0;
+        background: #21143e;
+        color: white;
+        padding: 30px 20px;
+    }
+
+    .sidebar h2 {
+        margin-bottom: 35px;
+        font-size: 25px;
+    }
+
+    .sidebar a {
+        display: block;
+        padding: 13px;
+        margin-bottom: 12px;
+        background: #35205f;
+        border-radius: 8px;
+        color: white;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+    .sidebar a:hover {
+        background: #7042b8;
+        transform: translateX(5px);
+    }
+
+    .sidebar a[href="tasks.html"] {
+        background: #7042b8;
+    }
+
+    .main {
+        flex: 1;
+        padding: 35px;
+        min-width: 0;
+    }
+
+    .header {
+        margin-bottom: 30px;
+    }
+
+    .header h1 {
+        font-size: 30px;
+        margin-bottom: 8px;
+        color: #35205f;
+    }
+
+    .header p {
+        color: #76698a;
+    }
+
+    .section {
+        background: white;
+        padding: 25px;
+        border-radius: 14px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 18px rgba(53, 32, 95, 0.08);
+        border: 1px solid #eee7f7;
+    }
+
+    .section h2 {
+        margin-bottom: 20px;
+        color: #35205f;
+        font-size: 21px;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid #ded4ed;
+        border-radius: 8px;
+        font-size: 14px;
+        background: #fdfcff;
+        color: #35205f;
+        outline: none;
+    }
+
+    input:focus, select:focus {
+        border-color: #8052c4;
+        box-shadow: 0 0 0 3px rgba(128, 82, 196, 0.12);
+    }
+
+    button {
+        background: #7042b8;
+        color: white;
+        border: none;
+        padding: 12px 22px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 15px;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background: #52308c;
+        transform: translateY(-2px);
+    }
+
+    #taskList {
+        color: #76698a;
+    }
+
+    @media (max-width: 750px) {
+        .container {
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 100%;
+        }
+
+        .main {
+            padding: 20px;
+        }
+    }
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <aside class="sidebar">
+        <h2>SmartTime</h2>
+
+        <a href="index.html">🏠 Dashboard</a>
+        <a href="tasks.html">📋 My Tasks</a>
+        <a href="manage-time.html">⏰ Manage Time</a>
+    </aside>
+
+    <main class="main">
+
+        <div class="header">
+            <h1>My Tasks</h1>
+            <p>Manage and organize all your tasks in one place!</p>
+        </div>
+
+        <div class="section">
+            <h2>Add New Task</h2>
+
+            <form id="taskForm">
+
+                <input type="text" id="title"
+                    placeholder="Enter task title" required>
+
+                <input type="text" id="description"
+                    placeholder="Enter task description">
+
+                <input type="datetime-local" id="dueDate">
+
+                <select id="priority">
+                    <option value="Low">Low Priority</option>
+                    <option value="Medium" selected>Medium Priority</option>
+                    <option value="High">High Priority</option>
+                </select>
+
+                <button type="submit">Add Task</button>
+
+            </form>
+            
+        </div>
+
+        <div class="section">
+
+            <h2>My Tasks</h2>
+
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Search tasks by title or description..."
+            >
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+
+                <select id="priorityFilter">
+                    <option value="All">All Priorities</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+
+                <select id="statusFilter">
+                    <option value="All">All Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                </select>
+
+            </div>
+
+            <div style="margin-bottom: 15px;">
+
+                <select id="sortTasks">
+                    <option value="default">Default Order</option>
+                    <option value="dueDate">Sort by Due Date</option>
+                    <option value="priority">Sort by Priority</option>
+                    <option value="latest">Latest Added</option>
+                </select>
+
+            </div>
+
+            <div id="taskList">
+                Your tasks will appear here.
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js")
+            .then(() => console.log("Service Worker registered successfully"))
+            .catch((error) => console.error("Service Worker registration failed:", error));
+    });
+}
+</script>
+<script src="/offline-storage.js"></script>
+<script src="/script.js"></script>
+</body>
+</html>

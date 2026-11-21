@@ -1,0 +1,559 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Time - SmartTime</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f2fa;
+            color: #281b3d;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 230px;
+            flex-shrink: 0;
+            background: #21143e;
+            color: white;
+            padding: 30px 20px;
+        }
+
+        .sidebar h2 {
+            margin-bottom: 35px;
+            font-size: 25px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 13px;
+            margin-bottom: 12px;
+            background: #35205f;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: #7042b8;
+            transform: translateX(5px);
+        }
+
+        .sidebar a[href="manage-time.html"] {
+            background: #7042b8;
+        }
+
+        .main {
+            flex: 1;
+            padding: 35px;
+            min-width: 0;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 30px;
+            margin-bottom: 8px;
+            color: #35205f;
+        }
+
+        .header p {
+            color: #76698a;
+        }
+
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 18px rgba(53, 32, 95, 0.08);
+            border: 1px solid #eee7f7;
+        }
+
+        .section h2 {
+            margin-bottom: 20px;
+            color: #35205f;
+            font-size: 21px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ded4ed;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #fdfcff;
+            color: #35205f;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #8052c4;
+            box-shadow: 0 0 0 3px rgba(128, 82, 196, 0.12);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #523d70;
+            font-size: 14px;
+        }
+
+        button {
+            background: #7042b8;
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #52308c;
+            transform: translateY(-2px);
+        }
+
+        .schedule-item {
+            padding: 18px;
+            margin-bottom: 14px;
+            background: #f7f3fc;
+            border: 1px solid #e9def5;
+            border-left: 4px solid #8052c4;
+            border-radius: 10px;
+        }
+
+        .schedule-item h3 {
+            color: #35205f;
+            margin-bottom: 8px;
+        }
+
+        .schedule-item p {
+            color: #76698a;
+            margin-bottom: 5px;
+        }
+
+        .schedule-item button {
+            margin-top: 10px;
+            background: #b34b78;
+            padding: 9px 18px;
+        }
+
+        .schedule-item button:hover {
+            background: #92375f;
+        }
+
+        #scheduleList {
+            color: #76698a;
+        }
+
+        @media (max-width: 750px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .main {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <aside class="sidebar">
+        <h2>SmartTime</h2>
+
+        <a href="index.html">🏠 Dashboard</a>
+        <a href="tasks.html">📋 My Tasks</a>
+        <a href="manage-time.html">⏰ Manage Time</a>
+    </aside>
+
+    <main class="main">
+
+        <div class="header">
+            <h1>Manage Your Time</h1>
+            <p>Plan your day and make better use of your time!</p>
+        </div>
+
+        <div class="section">
+            <h2>Add Daily Schedule</h2>
+
+            <form id="scheduleForm">
+                <input
+                    type="text"
+                    id="activity"
+                    placeholder="Enter activity name"
+                    required
+                >
+
+                <label>Start Time</label>
+                <input type="time" id="startTime" required>
+
+                <label>End Time</label>
+                <input type="time" id="endTime" required>
+
+                <button type="submit">Add Schedule</button>
+</form>
+
+<button
+    type="button"
+    id="enableNotifications"
+    style="display: block !important; visibility: visible !important; margin: 15px 0; padding: 12px;"
+>
+    Enable Schedule Notifications
+</button>
+
+        </div>
+
+        <div class="section">
+            <h2>My Daily Schedule</h2>
+            <div id="scheduleList">
+                No schedule added yet.
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+const scheduleForm = document.getElementById("scheduleForm");
+const scheduleList = document.getElementById("scheduleList");
+
+const SCHEDULE_API = "/api/schedules";
+let schedules = JSON.parse(localStorage.getItem("mySchedules")) || [];
+
+function saveLocalSchedules() {
+    localStorage.setItem("mySchedules", JSON.stringify(schedules));
+}
+
+function displaySchedules() {
+    scheduleList.innerHTML = "";
+
+    const visibleSchedules = schedules.filter(
+        schedule => schedule.action !== "DELETE"
+    );
+
+    if (visibleSchedules.length === 0) {
+        scheduleList.textContent = "No schedule added yet.";
+        return;
+    }
+
+    visibleSchedules.forEach(schedule => {
+        const item = document.createElement("div");
+        item.className = "schedule-item";
+
+        const activity = document.createElement("h3");
+        activity.textContent = schedule.activity;
+
+        const time = document.createElement("p");
+        time.textContent =
+            schedule.startTime + " - " + schedule.endTime;
+
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+
+        deleteButton.addEventListener("click", () => {
+            deleteSchedule(schedule);
+        });
+
+        item.appendChild(activity);
+        item.appendChild(time);
+        item.appendChild(deleteButton);
+
+        scheduleList.appendChild(item);
+    });
+}
+
+async function loadSchedules() {
+    if (!navigator.onLine) {
+        displaySchedules();
+        return;
+    }
+
+    try {
+        await syncSchedules();
+
+        const response = await fetch(SCHEDULE_API);
+
+        if (!response.ok) {
+            throw new Error("Schedules load nahi hue");
+        }
+
+        schedules = await response.json();
+        saveLocalSchedules();
+        displaySchedules();
+
+    } catch (error) {
+        console.log("Offline schedules load ho rahe hain.");
+        displaySchedules();
+    }
+}
+
+async function syncSchedules() {
+    if (!navigator.onLine) return;
+
+    for (let i = 0; i < schedules.length; i++) {
+        const schedule = schedules[i];
+
+        try {
+            if (schedule.action === "DELETE") {
+                const response = await fetch(
+                    SCHEDULE_API + "/" + schedule.serverId,
+                    { method: "DELETE" }
+                );
+
+                if (!response.ok) continue;
+
+                schedules.splice(i, 1);
+                i--;
+                saveLocalSchedules();
+
+            } else if (!schedule.id ||
+                       String(schedule.id).startsWith("offline-")) {
+
+                const response = await fetch(SCHEDULE_API, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        activity: schedule.activity,
+                        startTime: schedule.startTime,
+                        endTime: schedule.endTime
+                    })
+                });
+
+                if (!response.ok) {
+    const errorText = await response.text();
+    console.log("Schedule sync failed:", response.status, errorText);
+    continue;
+}
+
+                const savedSchedule = await response.json();
+
+                schedules[i] = savedSchedule;
+                saveLocalSchedules();
+            }
+
+        } catch (error) {
+            console.log("Schedule sync pending hai.");
+        }
+    }
+}
+
+async function deleteSchedule(schedule) {
+    if (navigator.onLine && schedule.id &&
+        !String(schedule.id).startsWith("offline-")) {
+
+        try {
+            const response = await fetch(
+                SCHEDULE_API + "/" + schedule.id,
+                { method: "DELETE" }
+            );
+
+            if (!response.ok) {
+                alert("Schedule delete nahi hua.");
+                return;
+            }
+
+        } catch (error) {
+            alert("Server unavailable. Try again.");
+            return;
+        }
+
+    } else if (schedule.id &&
+               !String(schedule.id).startsWith("offline-")) {
+
+        schedules.push({
+            id: "delete-" + schedule.id,
+            serverId: schedule.id,
+            action: "DELETE"
+        });
+    }
+
+    schedules = schedules.filter(
+        item => item !== schedule
+    );
+
+    saveLocalSchedules();
+    displaySchedules();
+}
+
+scheduleForm.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const activity = document.getElementById("activity").value;
+    const startTime = document.getElementById("startTime").value;
+    const endTime = document.getElementById("endTime").value;
+
+    if (endTime <= startTime) {
+        alert("End time must be after start time.");
+        return;
+    }
+
+    const newSchedule = {
+        activity: activity,
+        startTime: startTime,
+        endTime: endTime
+    };
+
+    if (navigator.onLine) {
+        try {
+            const response = await fetch(SCHEDULE_API, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(newSchedule)
+            });
+
+            if (!response.ok) {
+                throw new Error("Schedule save nahi hua");
+            }
+
+            schedules.push(await response.json());
+
+        } catch (error) {
+            alert("Schedule save nahi hua. Please try again.");
+            return;
+        }
+
+    } else {
+        newSchedule.id = "offline-" + Date.now();
+        schedules.push(newSchedule);
+    }
+
+    saveLocalSchedules();
+    scheduleForm.reset();
+    displaySchedules();
+});
+
+window.addEventListener("online", async () => {
+    await loadSchedules();
+});
+
+loadSchedules();
+// Enable schedule notifications
+const notificationButton = document.getElementById("enableNotifications");
+if (notificationButton && Notification.permission === "granted") {
+    notificationButton.textContent = "Notifications Enabled";
+    notificationButton.disabled = true;
+}
+
+function updateNotificationButton() {
+    if (!notificationButton || !("Notification" in window)) return;
+
+    if (Notification.permission === "granted") {
+        notificationButton.textContent = "Notifications Enabled";
+        notificationButton.disabled = true;
+    } else {
+        notificationButton.textContent = "Enable Schedule Notifications";
+        notificationButton.disabled = false;
+    }
+}
+
+// Check permission whenever the page loads or returns
+updateNotificationButton();
+window.addEventListener("pageshow", updateNotificationButton);
+window.addEventListener("focus", updateNotificationButton);
+
+if (notificationButton) {
+    notificationButton.addEventListener("click", async function () {
+        if (!("Notification" in window)) {
+            alert("Your browser does not support notifications.");
+            return;
+        }
+
+        const permission = await Notification.requestPermission();
+
+        if (permission === "granted") {
+            alert("Schedule notifications enabled!");
+        } else {
+            alert("Notification permission was not granted.");
+        }
+
+        updateNotificationButton();
+    });
+}
+// Check daily schedule reminders
+function checkScheduleReminders() {
+    if (!("Notification" in window) ||
+        Notification.permission !== "granted") {
+        return;
+    }
+
+    const now = new Date();
+    const currentTime =
+        String(now.getHours()).padStart(2, "0") + ":" +
+        String(now.getMinutes()).padStart(2, "0");
+
+    const today = now.toLocaleDateString("en-CA");
+
+    schedules.forEach(schedule => {
+        if (schedule.action === "DELETE") return;
+
+        if (!schedule.startTime ||
+            schedule.startTime.substring(0, 5) !== currentTime) {
+            return;
+        }
+
+        const scheduleKey =
+            schedule.id || (schedule.activity + "-" + schedule.startTime);
+
+        const reminderKey =
+            "scheduleReminder-" + today + "-" + scheduleKey;
+
+        if (localStorage.getItem(reminderKey)) return;
+
+        new Notification("Schedule Reminder", {
+            body: "It's time for: " + schedule.activity
+        });
+
+        localStorage.setItem(reminderKey, "shown");
+    });
+}
+
+
+// Check every 30 seconds
+setInterval(checkScheduleReminders, 30000);
+checkScheduleReminders();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js")
+            .then(() => console.log("Service Worker registered successfully"))
+            .catch((error) => console.error("Service Worker registration failed:", error));
+    });
+}
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>
